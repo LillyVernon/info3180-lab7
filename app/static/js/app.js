@@ -25,18 +25,84 @@ app.component('app-header', {
         </ul>
       </div>
     </nav>
-    `
-});
+    `,
+    data() {
+        return {
+            messages: [],
+            className: ''
+        }
+    }
 
+});
+const UploadForm = {
+    name: 'upload-form',
+    template: `
+    <h1>Form</h1>
+    <div :class="errorclass">
+        <ul class="uploadmessage" v-for="message in messages">
+            <li >{{message}}</li>
+        </ul>
+    </div>
+    <form method="POST" id="uploadForm" @submit.prevent="uploadPhoto">
+        <div class="form-group">
+            <label for="description">Description about Image</label>
+            <textarea type="text" name="description" class="form-control"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="photo">Photo Upload</label>
+            <input type="file" name="photo" id="photo" class="form-control" accept="image/*" draggable="true">
+        </div>
+        <button type="submit" class="btn btn-success">Submit</button>
+    </form>
+    `,
+    data() {
+        return {
+            messages: [],
+            className: ''
+        }
+    },
+    methods: {
+        uploadPhoto() {
+            let self = this;
+            let uploadForm = document.getElementById('uploadForm');
+            let form_data = new FormData(uploadForm)
+
+            fetch("/api/upload", {
+                    method: 'POST',
+                    body: form_data,
+                    headers: {
+                        'X-CSRFToken': token
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(jsonResponse) {
+                    if (jsonResponse['successful']) {
+                        self.messages = [jsonResponse['successful']['message']];
+                        self.className = "successful"
+                    } else {
+                        self.messages = jsonResponse['errors']['errors'];
+                        self.className = "errors"
+                    }
+
+                })
+                .catch(function(error) {
+                    console.log(error);
+                });
+
+        }
+    }
+};
 app.component('app-footer', {
     name: 'AppFooter',
-    template: `
-    <footer>
-        <div class="container">
-            <p>Copyright &copy; {{ year }} Flask Inc.</p>
-        </div>
-    </footer>
-    `,
+    template: ` <footer >
+                <div class = "container" >
+                <p> Copyright & copy; 
+                {{ year }} Flask Inc. </p> </div> 
+            </footer>
+            `,
     data() {
         return {
             year: (new Date).getFullYear()
@@ -46,12 +112,10 @@ app.component('app-footer', {
 
 const Home = {
     name: 'Home',
-    template: `
-    <div class="jumbotron">
-        <h1>Lab 7</h1>
-        <p class="lead">In this lab we will demonstrate VueJS working with Forms and Form Validation from Flask-WTF.</p>
-    </div>
-    `,
+    template: ` <div class = "jumbotron">
+            <h1> Lab 7 </h1> <p class = "lead"> In this lab we will demonstrate VueJS working with Forms and Form Validation from Flask - WTF. </p>
+             </div >
+            `,
     data() {
         return {}
     }
@@ -59,11 +123,9 @@ const Home = {
 
 const NotFound = {
     name: 'NotFound',
-    template: `
-    <div>
-        <h1>404 - Not Found</h1>
-    </div>
-    `,
+    template: `<div >
+            <h1> 404 - Not Found </h1> </div >
+            `,
     data() {
         return {}
     }
@@ -73,14 +135,15 @@ const NotFound = {
 const routes = [
     { path: "/", component: Home },
     // Put other routes here
-
+    { path: "/upload", component: UploadForm },
     // This is a catch all route in case none of the above matches
     { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFound }
 ];
 
 const router = VueRouter.createRouter({
     history: VueRouter.createWebHistory(),
-    routes, // short for `routes: routes`
+    routes, // short for `
+    routes: routes
 });
 
 app.use(router);

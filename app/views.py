@@ -5,7 +5,6 @@ Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 This file creates your application.
 """
 import os
-import jwt
 from app import app
 from flask import render_template, request,redirect, url_for, flash, session, abort, send_from_directory,jsonify
 from .forms import  UploadForm
@@ -22,7 +21,8 @@ def upload():
         filename=secure_filename(photo.filename)
         photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         flash('File Saved', 'success')
-        return jsonify({"message":"File Upload Successful", "filename":filename, "description": description})
+        successful={"message":"File Upload Successful", "filename":filename, "description": description}
+        return jsonify(successful=successful)
     else:
         errors={"errors":form_errors(form)}
         return jsonify(errors=errors)
